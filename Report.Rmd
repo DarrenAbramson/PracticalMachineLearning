@@ -1,0 +1,49 @@
+---
+title: "Practical Machine Learning Assignment"
+author: "Darren Abramson"
+date: "February 20, 2015"
+output: html_document
+---
+I first read in the data. The most simple approach, which I adopt first, is to assume that columns containing blank or NA values should be omitted from the model I will fit. I then also remove columns that clearly have to do with methods of data collection, including timestamp and window information.
+
+Investigation shows that the test data and training data, when cleaned identically in this fashion, result in the same number of measured variables.
+
+```{r}
+data <- read.csv(file="pml-training.csv", head=TRUE, na.strings=c("", "NA"))
+badCols <- apply(data, 2, function(val) any(is.na(val)))
+noBadCols <- data[,!badCols]
+noBadCols <- subset(noBadCols, select=-c(X, raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp,new_window, num_window))
+
+finalTestData <- read.csv(file="pml-testing.csv", head=TRUE, na.strings=c("", "NA"))
+testBadCols <- apply(finalTestData, 2, function(val) any(is.na(val)))
+finalTestDataCleaned <- finalTestData[,!testBadCols]
+finalTestDataCleaned <- subset(finalTestDataCleaned, select=-c(X, raw_timestamp_part_1,raw_timestamp_part_2,cvtd_timestamp,new_window, num_window))
+
+ncol(finalTestDataCleaned) == ncol(noBadCols)
+```
+
+For the purpose of estimating out of sample error, the data is divided into training and testing sets.
+
+```{r}
+library(caret)
+inTrain <- createDataPartition(y=noBadCols$classe, p=0.7, list=FALSE)
+training = noBadCols[inTrain,]
+testing = noBadCols[-inTrain,]
+```
+The model is built using the random forest method in the random forest package. Note that this statistical method incorporates cross validation, since it involves randomly selecting measurements of the predicting variables and building separate classification trees on the basis of bootstrapping. On my computer it took approximately 3 minutes to fit this model.
+
+```{r}
+library(randomForest)
+modFit <- randomForest(classe ~ ., data=training,  ntree = 2000)
+```
+
+We estimate the out of sample error by measuring the accuracy of the model's predictions against the actual values for the testing set. This is presented both as a table and as a percentage.
+
+```{r}
+pred <- predict(modFit, testing)
+table(pred, testing$classe)
+sum(!pred==testing$classe)/sum(pred==testing$classe)
+```
+
+The out of sample error, therefore, is expected to be less than 1 percent.
+
