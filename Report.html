@@ -81,7 +81,7 @@ ncol(finalTestDataCleaned) == ncol(noBadCols)</code></pre>
 <pre class="r"><code>inTrain &lt;- createDataPartition(y=noBadCols$classe, p=0.7, list=FALSE)
 training = noBadCols[inTrain,]
 testing = noBadCols[-inTrain,]</code></pre>
-<p>The model is built using the random forest method in the caret package. Note that this statistical method incorporates cross validation, since it involves randomly selecting measurements of the predicting variables and building separate classification trees on the basis of bootstrapping. On my computer it took approximately 3 minutes to fit this model.</p>
+<p>The model is built using the random forest method in the random forest package. Note that this statistical method incorporates cross validation, since it involves randomly selecting measurements of the predicting variables and building separate classification trees on the basis of bootstrapping. On my computer it took approximately 3 minutes to fit this model.</p>
 <pre class="r"><code>library(randomForest)</code></pre>
 <pre><code>## randomForest 4.6-10
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
@@ -91,13 +91,13 @@ testing = noBadCols[-inTrain,]</code></pre>
 table(pred, testing$classe)</code></pre>
 <pre><code>##     
 ## pred    A    B    C    D    E
-##    A 1672    5    0    0    0
-##    B    2 1133    3    0    0
-##    C    0    1 1023   14    1
-##    D    0    0    0  950    3
-##    E    0    0    0    0 1078</code></pre>
+##    A 1672    6    0    0    0
+##    B    2 1131   10    0    0
+##    C    0    2 1015    7    2
+##    D    0    0    1  956    1
+##    E    0    0    0    1 1079</code></pre>
 <pre class="r"><code>sum(!pred==testing$classe)/sum(pred==testing$classe)</code></pre>
-<pre><code>## [1] 0.004952</code></pre>
+<pre><code>## [1] 0.005467</code></pre>
 <p>The out of sample error, therefore, is expected to be less than 1 percent.</p>
 
 
